@@ -22,9 +22,7 @@ export const config = {
     // The path of the spec files will be resolved relative from the directory of
     // of the config file unless it's absolute.
     //
-    specs: [
-        './test/login.feature'
-    ],
+    specs: ['./features/BDD/login.feature'],
     // Patterns to exclude.
     exclude: [
         // 'path/to/excluded/files'
@@ -54,7 +52,7 @@ export const config = {
     capabilities: [{
         // capabilities for local Appium web tests on an Android Emulator
         'appium:platformName': 'Android',
-        'appium:deviceName': 'Automacao',
+        'appium:deviceName': 'api35',
         'appium:automationName': 'UiAutomator2',
         'appium:appPackage': 'br.com.confesol.ib.cresol',
         'appium:appActivity': 'br.com.confesol.ib.cresol.MainActivity'
@@ -137,14 +135,14 @@ export const config = {
     // see also: https://webdriver.io/docs/dot-reporter
     reporters: [['allure', {
         outputDir: 'allure-results',
-        disableWebdriverStepsReporting: false,
+        disableWebdriverStepsReporting: true,
         disableWebdriverScreenshotsReporting: false
     }]],
 
     // If you are using Cucumber you need to specify the location of your step definitions.
     cucumberOpts: {
         // <string[]> (file/dir) require files before executing features
-        import: [ './test/specs/login.steps.js'],
+        require: [ './features/specs/login.steps.js'],
         // <boolean> show full backtrace for errors
         backtrace: false,
         // <string[]> ("extension:module") require files with the given EXTENSION after requiring MODULE (repeatable)
@@ -228,6 +226,7 @@ export const config = {
         await allowLocalizao.click();
         const allowContatos = await driver.$("id:com.android.permissioncontroller:id/permission_allow_button");
         await allowContatos.click();
+        await allowContatos.click();
         const negarSms = await driver.$("-android uiautomator:new UiSelector().text(\"Agora não\")");
         await negarSms.click();
 
@@ -296,8 +295,15 @@ export const config = {
      * @param {number}             result.duration  duration of scenario in milliseconds
      * @param {object}             context          Cucumber World object
      */
-    // afterStep: function (step, scenario, result, context) {
-    // },
+    afterStep: async function (step, scenario, { error, duration, passed, broken }, context) {
+        if (error) {
+          await browser.takeScreenshot();
+        }
+        if (broken){
+            await browser.takeScreenshot();
+        }
+
+      },
     /**
      *
      * Runs after a Cucumber Scenario.
@@ -368,7 +374,7 @@ export const config = {
                     return reject(reportError)
                 }
 
-                console.log('Allure report successfully generated')
+                console.log('Relatório dos testes gerado com sucesso! Abra digitando "Allure open" no console')
                 resolve()
             })
         })
